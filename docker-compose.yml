@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: geosearch
+      POSTGRES_USER: geosearch
+      POSTGRES_PASSWORD: geosearch
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg2://geosearch:geosearch@db:5432/geosearch
+      REDIS_URL: redis://redis:6379/0
+      CACHE_TTL_SECONDS: "60"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  pgdata:
