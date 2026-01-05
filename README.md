@@ -262,12 +262,6 @@ locust/
 
 ---
 
-## License
-
-Add a `LICENSE` file if you plan to open-source this publicly (MIT is common for projects like this).
-
----
-
 ## Attribution / Data Sources
 
 - The repo includes **synthetic seeding** and a tiny sample CSV so you can run it immediately.
