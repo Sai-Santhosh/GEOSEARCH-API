@@ -1,6 +1,6 @@
 # GeoSearch API
 
-A geospatial search backend built with **FastAPI + PostgreSQL/PostGIS + Redis**, designed to feel like a real production service: clean REST endpoints, fast geo queries, caching, and repeatable load testing.
+A geospatial search backend built with **FastAPI + PostgreSQL/PostGIS + Redis**, production service: clean REST endpoints, fast geo queries, caching, and repeatable load testing.
 
 It supports:
 - **Nearby search (radius)** with distance sorting
