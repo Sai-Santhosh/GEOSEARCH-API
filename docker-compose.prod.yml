@@ -1,0 +1,55 @@
+# ============================================================================
+# GeoSearch API - Production Docker Compose
+# ============================================================================
+# Use with: docker compose -f docker-compose.prod.yml up -d
+
+services:
+  api:
+    image: ghcr.io/yourusername/geosearch-api:latest
+    container_name: geosearch-api
+    environment:
+      # Required - Set these in .env or environment
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      # Application
+      ENVIRONMENT: production
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+      WORKERS: "4"
+      # Caching
+      CACHE_ENABLED: "true"
+      CACHE_TTL_SECONDS: "300"
+      # Rate Limiting
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_REQUESTS: "1000"
+      RATE_LIMIT_WINDOW: "60"
+      # Security
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      API_KEY_ENABLED: ${API_KEY_ENABLED:-false}
+      API_KEYS: ${API_KEYS:-}
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"

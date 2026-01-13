@@ -1,12 +1,42 @@
+# GeoSearch API - Production Dependencies
+# ========================================
+
+# Web Framework
 fastapi==0.115.6
 uvicorn[standard]==0.32.1
+starlette==0.41.3
+
+# Data Validation
 pydantic==2.10.4
 pydantic-settings==2.7.1
+
+# Database
 sqlalchemy==2.0.36
 psycopg2-binary==2.9.9
+
+# Caching
 redis==5.2.1
+
+# Geospatial
 geohash2==1.1
+
+# Serialization
 orjson==3.10.12
+
+# HTTP Client
 httpx==0.28.1
+
+# Environment
 python-dotenv==1.0.1
+
+# Development & Testing
+pytest==8.3.4
+pytest-cov==6.0.0
+pytest-asyncio==0.24.0
+
+# Load Testing
 locust==2.32.4
+
+# Code Quality
+ruff==0.8.4
+mypy==1.14.1

@@ -1,6 +1,7 @@
 services:
   db:
     image: postgis/postgis:16-3.4
+    container_name: geosearch-db
     environment:
       POSTGRES_DB: geosearch
       POSTGRES_USER: geosearch
@@ -9,23 +10,78 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U geosearch -d geosearch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    container_name: geosearch-redis
     ports:
       - "6379:6379"
+    volumes:
+      - redisdata:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   api:
-    build: .
+    build:
+      context: .
+      target: production
+    container_name: geosearch-api
     environment:
       DATABASE_URL: postgresql+psycopg2://geosearch:geosearch@db:5432/geosearch
       REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+      LOG_FORMAT: text
+      CACHE_ENABLED: "true"
       CACHE_TTL_SECONDS: "60"
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_REQUESTS: "100"
+      RATE_LIMIT_WINDOW: "60"
+      CORS_ORIGINS: "*"
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  locust:
+    image: locustio/locust:latest
+    container_name: geosearch-locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host http://api:8000
+    depends_on:
+      - api
+    profiles:
+      - testing
 
 volumes:
   pgdata:
+  redisdata:
+
+networks:
+  default:
+    name: geosearch-network
